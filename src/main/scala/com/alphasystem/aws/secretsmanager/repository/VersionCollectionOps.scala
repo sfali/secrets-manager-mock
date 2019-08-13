@@ -51,9 +51,12 @@ class VersionCollectionOps(collection: NitriteCollection) {
           if (Option(currentStages).isEmpty) {
             stagesToAdd
           } else currentStages.split(",").filterNot(_ == stageToRemove).toList ::: stagesToAdd
+
+        val stages = if (newStages.isEmpty) null else newStages.mkString(",")
+
         Some(
           document
-            .put(VersionStageProperty, newStages.mkString(","))
+            .put(VersionStageProperty, stages)
             .put(LastAccessedDateProperty, OffsetDateTime.now().toEpochSecond.toString)
         )
       case Nil => None
@@ -61,7 +64,9 @@ class VersionCollectionOps(collection: NitriteCollection) {
     }
   }
 
-  def listVersions(name: String): List[Version] = collection.find(feq(NameProperty, name)).toScalaList.map(toVersion)
+  def listVersions(name: String): List[Version] = {
+    collection.find(feq(NameProperty, name)).toScalaList.map(toVersion)
+  }
 }
 
 object VersionCollectionOps {

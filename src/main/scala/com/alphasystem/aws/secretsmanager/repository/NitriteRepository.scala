@@ -155,7 +155,8 @@ class NitriteRepository(dbFile: String) extends Repository {
     val maybePreviousVersion = versionCollectionOps.findPreviousVersion(name)
 
     // if there is no current version then add current version
-    var finalStages = maybeCurrentVersion.map(_ => versionStages :+ CurrentLabel).getOrElse(versionStages)
+    var finalStages = if (maybeCurrentVersion.isEmpty || versionStages.isEmpty) versionStages :+ CurrentLabel
+    else versionStages
 
     // if current version exists then remove previous label
     finalStages =
@@ -167,7 +168,15 @@ class NitriteRepository(dbFile: String) extends Repository {
     finalStages = finalStages.distinct
 
     // remove any existing stages except current (which is a special case)
-    val stagesToRemove = finalStages.filterNot(_ == CurrentLabel)
+    var stagesToRemove = finalStages.filterNot(_ == CurrentLabel)
+
+    // move previous
+    stagesToRemove =
+      if (maybePreviousVersion.isDefined && finalStages.contains(CurrentLabel)) stagesToRemove :+ PreviousLabel
+      else stagesToRemove
+
+    // remove duplicate
+    stagesToRemove = stagesToRemove.distinct
 
     var documents =
       stagesToRemove

@@ -18,6 +18,7 @@ class NitriteRepositorySpec
   private val defaultName = "local/test"
   private val dbFile: String = "test.db"
   private val secretData = SecretModel("app_adm", "Example123")
+  private val defaultVersionId = toVersionId(defaultName)
   private val repository = NitriteRepository(dbFile)
 
   override protected def afterAll(): Unit = {
@@ -28,12 +29,11 @@ class NitriteRepositorySpec
 
   it should "insert new secret" in {
     val description = "new test secret"
-    val versionId = toVersionId(defaultName)
+    val versionId = defaultVersionId
     val response = repository.createSecret(name = defaultName,
       description = Some(description),
       versionId = versionId,
       secretString = Some(secretData.toJson))
-    println(repository.describeSecret(defaultName).versions)
     response mustBe SecretResponse(response.arn, defaultName, versionId, CurrentLabel :: Nil)
   }
 
@@ -52,7 +52,7 @@ class NitriteRepositorySpec
     val versions = secretEntity.versions
     versions must have length 1
     val version = versions.head
-    version.versionId mustEqual toVersionId(defaultName)
+    version.versionId mustEqual defaultVersionId
     version.secret mustEqual secretData.toJson
     version.stages must have length 1
     val stage = version.stages.head
@@ -68,7 +68,7 @@ class NitriteRepositorySpec
     val versions = secretEntity.versions
     versions must have length 1
     val version = versions.head
-    version.versionId mustEqual toVersionId(defaultName)
+    version.versionId mustEqual defaultVersionId
     version.secret mustEqual secretData.toJson
     version.stages must have length 1
     val stage = version.stages.head
@@ -76,7 +76,7 @@ class NitriteRepositorySpec
   }
 
   it should "get secret with name and versionId" in {
-    val secretEntity = repository.getSecret(defaultName, versionId = Some(toVersionId(defaultName)))
+    val secretEntity = repository.getSecret(defaultName, versionId = Some(defaultVersionId))
     secretEntity.arn must include(defaultName)
     secretEntity.name mustEqual defaultName
     secretEntity.description mustBe Some("new test secret")
@@ -84,7 +84,7 @@ class NitriteRepositorySpec
     val versions = secretEntity.versions
     versions must have length 1
     val version = versions.head
-    version.versionId mustEqual toVersionId(defaultName)
+    version.versionId mustEqual defaultVersionId
     version.secret mustEqual secretData.toJson
     version.stages must have length 1
     val stage = version.stages.head
@@ -99,16 +99,43 @@ class NitriteRepositorySpec
   it should "fail attempt to update existing secret value" in {
     val secretData = this.secretData.copy(password = "Example124")
     an[ResourceExistsException.type] must be thrownBy
-      repository.putSecretValue(defaultName, toVersionId(defaultName), secretString = Some(secretData.toJson))
+      repository.putSecretValue(defaultName, defaultVersionId, secretString = Some(secretData.toJson))
   }
 
   it should "add new staging label" in {
     val secretData = this.secretData.copy(password = "Example124")
-    val versionId = toVersionId("NewLabel")
+    val versionId = toVersionId(PreviousLabel)
     repository.putSecretValue(defaultName, versionId, secretString = Some(secretData.toJson),
       versionStages = PreviousLabel :: Nil)
     val secretEntity = repository.describeSecret(defaultName)
-    println(secretEntity.versions)
+    val versions = secretEntity.versions
+
+    val currentVersion = versions.filter(_.versionId == defaultVersionId).head
+    currentVersion.versionId mustEqual defaultVersionId
+    currentVersion.secret mustEqual this.secretData.toJson
+
+    val previousVersion = versions.filter(_.versionId == versionId).head
+    previousVersion.versionId mustEqual versionId
+    previousVersion.secret mustEqual secretData.toJson
+  }
+
+  it should "add new current label and move current to previous" in {
+    val secretData = this.secretData.copy(password = "Example567")
+    val versionId = toVersionId("NewCurrent")
+    repository.putSecretValue(defaultName, versionId, secretString = Some(secretData.toJson))
+    val secretEntity = repository.describeSecret(defaultName)
+    val versions = secretEntity.versions
+
+    val currentVersion = versions.filter(_.versionId == versionId).head
+    currentVersion.versionId mustEqual versionId
+    currentVersion.secret mustEqual secretData.toJson
+
+    val previousVersion = versions.filter(_.versionId == defaultVersionId).head
+    previousVersion.versionId mustEqual defaultVersionId
+    previousVersion.secret mustEqual this.secretData.toJson
+
+    val oldPreviousVersion = versions.filter(_.versionId == toVersionId(PreviousLabel)).head
+    oldPreviousVersion.stages mustBe empty
   }
 
   private lazy val toVersionId = (name: String) => UUID.nameUUIDFromBytes(name.getBytes).toString

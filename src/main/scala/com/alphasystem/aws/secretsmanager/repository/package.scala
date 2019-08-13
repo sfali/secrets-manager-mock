@@ -61,7 +61,7 @@ package object repository {
       versionId = document.getString(VersionIdProperty),
       createdDate = document.getOffsetDateTime(CreatedDateProperty),
       secret = secret,
-      stages = document.getString(VersionStageProperty).split(",").toList
+      stages = document.getOptionalString(VersionStageProperty).map(_.split(",").toList).getOrElse(Nil)
     )
   }
 
