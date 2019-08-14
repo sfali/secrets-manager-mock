@@ -14,7 +14,7 @@ import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
 import scala.util.{Failure, Success, Try}
 
-class NitriteRepository(dbFile: String) extends Repository {
+class NitriteRepository(dbFile: String) {
 
   import Document._
   import Errors._
