@@ -32,7 +32,7 @@ package object repository {
       if (populateVersion) {
         val maybeVersionsDocument = document.getOptionalForeignField(VersionsProperty)
         if (maybeVersionsDocument.isEmpty) {
-          throw ResourceNotFoundException
+          throw ResourceNotFoundException()
         }
         val versionDocument = maybeVersionsDocument.get.head
         toVersion(versionDocument) :: Nil
@@ -52,15 +52,12 @@ package object repository {
       .getOptionalString(SecretStringProperty)
       .map(Base64.getDecoder.decode)
       .map(new String(_))
-    val secret =
-      if (secretBinary.isDefined) secretBinary.get
-      else if (secretString.isDefined) secretString.get
-      else ""
 
     Version(
       versionId = document.getString(VersionIdProperty),
       createdDate = document.getOffsetDateTime(CreatedDateProperty),
-      secret = secret,
+      secretString = secretString,
+      secretBinary = secretBinary,
       stages = document.getOptionalString(VersionStageProperty).map(_.split(",").toList).getOrElse(Nil)
     )
   }
@@ -75,13 +72,12 @@ package object repository {
 
   def parseSecret(secretString: Option[String] = None,
                   secretBinary: Option[String] = None): (String, String) = {
-    if (secretString.isDefined) {
+    if (secretString.isDefined)
       (Base64.getEncoder.encodeToString(secretString.get.getBytes), SecretStringProperty)
-    } else if (secretBinary.isDefined) {
+    else if (secretBinary.isDefined)
       (secretBinary.get, SecretBinaryProperty)
-    } else {
+    else
       throw new Exception("????")
-    }
   }
 
 }

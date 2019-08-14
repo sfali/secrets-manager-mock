@@ -138,8 +138,8 @@ class NitriteRepository(dbFile: String) {
     maybeVersion match {
       case Some(version) => // version already exists
         // changes are not allowed to exiting versions
-        val differentSecretString = secretString.isDefined && version.secret != secretString.get
-        val differentSecretBinary = secretBinary.isDefined && version.secret != secretBinary.get
+        val differentSecretString = secretString.isDefined && !version.secretString.forall(_ == secretString.get)
+        val differentSecretBinary = secretBinary.isDefined && !version.secretBinary.forall(_ == secretBinary.get)
         if (differentSecretString || differentSecretBinary) {
           throw ResourceExistsException(name)
         } else {

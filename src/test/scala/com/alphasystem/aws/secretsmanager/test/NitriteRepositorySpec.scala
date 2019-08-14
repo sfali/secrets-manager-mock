@@ -53,7 +53,7 @@ class NitriteRepositorySpec
     versions must have length 1
     val version = versions.head
     version.versionId mustEqual defaultVersionId
-    version.secret mustEqual secretData.toJson
+    version.secretString.get mustEqual secretData.toJson
     version.stages must have length 1
     val stage = version.stages.head
     stage mustEqual CurrentLabel
@@ -69,7 +69,7 @@ class NitriteRepositorySpec
     versions must have length 1
     val version = versions.head
     version.versionId mustEqual defaultVersionId
-    version.secret mustEqual secretData.toJson
+    version.secretString.get mustEqual secretData.toJson
     version.stages must have length 1
     val stage = version.stages.head
     stage mustEqual CurrentLabel
@@ -85,14 +85,14 @@ class NitriteRepositorySpec
     versions must have length 1
     val version = versions.head
     version.versionId mustEqual defaultVersionId
-    version.secret mustEqual secretData.toJson
+    version.secretString.get mustEqual secretData.toJson
     version.stages must have length 1
     val stage = version.stages.head
     stage mustEqual CurrentLabel
   }
 
   it should "not find non-existing version" in {
-    an[ResourceNotFoundException.type] must be thrownBy
+    an[ResourceNotFoundException] must be thrownBy
       repository.getSecret(defaultName, versionId = Some(UUID.randomUUID().toString))
   }
 
@@ -112,11 +112,11 @@ class NitriteRepositorySpec
 
     val currentVersion = versions.filter(_.versionId == defaultVersionId).head
     currentVersion.versionId mustEqual defaultVersionId
-    currentVersion.secret mustEqual this.secretData.toJson
+    currentVersion.secretString.get mustEqual this.secretData.toJson
 
     val previousVersion = versions.filter(_.versionId == versionId).head
     previousVersion.versionId mustEqual versionId
-    previousVersion.secret mustEqual secretData.toJson
+    previousVersion.secretString.get mustEqual secretData.toJson
   }
 
   it should "add new current label and move current to previous" in {
@@ -128,11 +128,11 @@ class NitriteRepositorySpec
 
     val currentVersion = versions.filter(_.versionId == versionId).head
     currentVersion.versionId mustEqual versionId
-    currentVersion.secret mustEqual secretData.toJson
+    currentVersion.secretString.get mustEqual secretData.toJson
 
     val previousVersion = versions.filter(_.versionId == defaultVersionId).head
     previousVersion.versionId mustEqual defaultVersionId
-    previousVersion.secret mustEqual this.secretData.toJson
+    previousVersion.secretString.get mustEqual this.secretData.toJson
 
     val oldPreviousVersion = versions.filter(_.versionId == toVersionId(PreviousLabel)).head
     oldPreviousVersion.stages mustBe empty
