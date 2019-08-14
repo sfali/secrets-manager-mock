@@ -48,7 +48,7 @@ class NitriteRepository(dbFile: String) {
                    tag: Option[Tag] = None): SecretResponse = {
     val maybeSecretEntity =
       Try(describeSecret(name)) match {
-        case Failure(ex: ResourceNotFoundException.type) => None
+        case Failure(_: ResourceNotFoundException) => None
         case Failure(ex) => throw ex
         case Success(secretEntity) => Some(secretEntity)
       }
@@ -119,7 +119,7 @@ class NitriteRepository(dbFile: String) {
         .asScala.toList
 
     documents match {
-      case Nil => throw ResourceNotFoundException
+      case Nil => throw ResourceNotFoundException()
       case document :: Nil => toSecretEntity(document)
       case _ => throw new IllegalStateException(s"Found more than one record for $secretId.")
     }
@@ -224,7 +224,7 @@ class NitriteRepository(dbFile: String) {
 
   private def getSecretInternal(name: String) = {
     secretCollection.find(feq(NameProperty, name)).toScalaList match {
-      case Nil => throw ResourceNotFoundException
+      case Nil => throw ResourceNotFoundException()
       case document :: Nil => toSecretEntity(document, populateVersion = false)
       case _ => throw new IllegalStateException(s"Found more than one record for $name.")
     }

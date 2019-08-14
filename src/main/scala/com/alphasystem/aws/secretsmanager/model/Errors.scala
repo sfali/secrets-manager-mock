@@ -12,8 +12,9 @@ object Errors {
     override val message: String = s"The operation failed because the secret $secretId already exists."
   }
 
-  case object ResourceNotFoundException
-    extends Exception("We can't find the resource that you asked for.")
+  case class ResourceNotFoundException() extends ErrorResponse {
+    override val message: String = "Secrets Manager can't find the specified secret."
+  }
 
   sealed trait ErrorResponse extends Throwable {
     val errorType: String = getClass.getSimpleName
