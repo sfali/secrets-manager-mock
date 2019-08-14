@@ -47,7 +47,6 @@ lazy val root = (project in file("."))
 
       Seq(
         akka             %% "akka-http"                         % akkaHttpVersion,
-        akka             %% "akka-http-xml"                     % akkaHttpVersion,
         akka 				     %% "akka-stream" 					            % akkaVersion,
         slf4j            %  "jcl-over-slf4j"                    % "1.7.25",
         logback          %  "logback-classic"                   % "1.2.3",
@@ -58,7 +57,6 @@ lazy val root = (project in file("."))
         Beachape         %% Enumeratum                          % EnumeratumVersion,
         Beachape         %% EnumeratumCirce                     % EnumeratumCirceVersion,
         heikoseeberger   %% "akka-http-circe"                   % akkaHttpCirceVersion,
-        scalaLangModules %% "scala-xml"                         % scalaXmlVersion,
         Dizitart         %  "nitrite"                           % NitriteVersion,
         akka             %% "akka-testkit"                      % akkaVersion                 % "it, test",
         scalaTest        %% "scalatest"                         % "3.0.8"                     % "it, test",
