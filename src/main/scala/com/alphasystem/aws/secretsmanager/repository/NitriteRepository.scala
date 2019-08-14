@@ -49,7 +49,7 @@ class NitriteRepository(dbFile: String) extends Repository {
     val maybeSecretEntity =
       Try(describeSecret(name)) match {
         case Failure(ex: ResourceNotFoundException.type) => None
-        case Failure(ex: IllegalStateException) => throw ex
+        case Failure(ex) => throw ex
         case Success(secretEntity) => Some(secretEntity)
       }
 
@@ -141,7 +141,7 @@ class NitriteRepository(dbFile: String) extends Repository {
         val differentSecretString = secretString.isDefined && version.secret != secretString.get
         val differentSecretBinary = secretBinary.isDefined && version.secret != secretBinary.get
         if (differentSecretString || differentSecretBinary) {
-          throw ResourceExistsException
+          throw ResourceExistsException(name)
         } else {
           // existing version with no changes
           SecretResponse(secretEntity.arn, secretEntity.name, version.versionId, version.stages)

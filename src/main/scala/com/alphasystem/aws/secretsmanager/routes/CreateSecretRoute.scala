@@ -1,15 +1,12 @@
 package com.alphasystem.aws.secretsmanager.routes
 
 import akka.event.LoggingAdapter
-import akka.http.scaladsl.model.HttpRequest
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
-import akka.stream.scaladsl.Sink
-import com.alphasystem.aws.secretsmanager.model.Errors
+import com.alphasystem.aws.secretsmanager.model.{Errors, SecretResponse}
 import com.alphasystem.aws.secretsmanager.repository.NitriteRepository
 import com.alphasystem.aws.secretsmanager.routes.model.CreateSecretRequest
-import io.circe.parser._
 
 import scala.util.{Failure, Success}
 
@@ -17,14 +14,18 @@ class CreateSecretRoute private(log: LoggingAdapter, repository: NitriteReposito
   extends CustomMarshallers {
 
   import Errors._
-  import mat.executionContext
+
+  private def getResponse(entity: CreateSecretRequest): SecretResponse =
+    repository.createSecret(entity.name, entity.versionId,
+      entity.description, entity.kmsKeyId, entity.secretString, entity.secretBinary, entity.tags)
 
   def route: Route =
     (post & extractRequest & headerValue(extractTarget(Target.CreateSecret))) {
       (request, _) =>
-        onComplete(createSecret(request)) {
+        val eventualRequest = extractEntity[CreateSecretRequest, SecretResponse](request, log, getResponse)
+        onComplete(eventualRequest) {
           case Success(value) => complete(value.toCreateSecretResponse)
-          case Failure(ex: ResourceExistsException.type) =>
+          case Failure(ex: ResourceExistsException) =>
             log.error(ex, "CreateSecretRequest-ResourceExistsException: Unable to create secret")
             complete(ex)
           case Failure(ex: IllegalStateException) =>
@@ -36,22 +37,6 @@ class CreateSecretRoute private(log: LoggingAdapter, repository: NitriteReposito
             complete(ex)
         }
     }
-
-  private def createSecret(request: HttpRequest) =
-    request
-      .entity
-      .dataBytes
-      .map(_.utf8String)
-      .runWith(Sink.head)
-      .map(decode[CreateSecretRequest](_))
-      .map {
-        case Left(error) =>
-          log.error(error, "Unable to decode request")
-          throw InvalidRequestException
-        case Right(value) => value
-      }
-      .map(entity => repository.createSecret(entity.name, entity.versionId,
-        entity.description, entity.kmsKeyId, entity.secretString, entity.secretBinary, entity.tags))
 }
 
 object CreateSecretRoute {

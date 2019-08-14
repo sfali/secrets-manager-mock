@@ -39,7 +39,7 @@ class NitriteRepositorySpec
 
   it should "reject attempt to create duplicate secret" in {
     val secretString = secretData.copy(password = "Example567").toJson
-    an[ResourceExistsException.type] must be thrownBy
+    an[ResourceExistsException] must be thrownBy
       repository.createSecret(name = defaultName, versionId = defaultVersionId, secretString = Some(secretString))
   }
 
@@ -98,7 +98,7 @@ class NitriteRepositorySpec
 
   it should "fail attempt to update existing secret value" in {
     val secretData = this.secretData.copy(password = "Example124")
-    an[ResourceExistsException.type] must be thrownBy
+    an[ResourceExistsException] must be thrownBy
       repository.putSecretValue(defaultName, defaultVersionId, secretString = Some(secretData.toJson))
   }
 

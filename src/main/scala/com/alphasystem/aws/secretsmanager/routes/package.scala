@@ -1,9 +1,17 @@
 package com.alphasystem.aws.secretsmanager
 
-import akka.http.scaladsl.model.HttpHeader
+import akka.event.LoggingAdapter
 import akka.http.scaladsl.model.headers.RawHeader
+import akka.http.scaladsl.model.{HttpHeader, HttpRequest}
+import akka.stream.Materializer
+import akka.stream.scaladsl.Sink
+import com.alphasystem.aws.secretsmanager.model.Errors.InvalidRequestException
 import com.alphasystem.aws.secretsmanager.model.SecretResponse
 import com.alphasystem.aws.secretsmanager.routes.model.CreateSecretResponse
+import io.circe.Decoder
+import io.circe.parser.decode
+
+import scala.concurrent.Future
 
 package object routes {
 
@@ -11,7 +19,7 @@ package object routes {
 
   implicit class SecretResponseOps(src: SecretResponse) {
     def toCreateSecretResponse: CreateSecretResponse =
-      CreateSecretResponse(s"${ARNPrefix}${src.arn}", src.name, src.versionId)
+      CreateSecretResponse(s"$ARNPrefix${src.arn}", src.name, src.versionId)
   }
 
   def extractTarget(value: Target): HttpHeader => Option[String] = {
@@ -26,5 +34,26 @@ package object routes {
         }
       } else None
     case _ => None
+  }
+
+  def extractEntity[Request, Response](request: HttpRequest,
+                                       log: LoggingAdapter,
+                                       fun: Request => Response)
+                                      (implicit mat: Materializer,
+                                       decoder: Decoder[Request]): Future[Response] = {
+    import mat.executionContext
+    request
+      .entity
+      .dataBytes
+      .map(_.utf8String)
+      .runWith(Sink.head)
+      .map(decode[Request](_))
+      .map {
+        case Left(error) =>
+          log.error(error, "Unable to decode request")
+          throw InvalidRequestException
+        case Right(value) => value
+      }
+      .map(fun(_))
   }
 }
