@@ -1,29 +1,19 @@
 package com.alphasystem.aws.secretsmanager.routes
 
+import akka.event.LoggingAdapter
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
-import Directives._
-import akka.event.LoggingAdapter
+import akka.stream.Materializer
+import com.alphasystem.aws.secretsmanager.repository.NitriteRepository
 
 trait Routes {
 
-  import Target._
-
+  protected implicit val mat: Materializer
   protected implicit val log: LoggingAdapter
+  protected implicit val repository: NitriteRepository
 
   protected lazy val _routes: Route =
     pathEndOrSingleSlash {
-      (headerValueByType[`X-Amz-Target`]() & headerValueByName("Authorization")) {
-        (targetHeader, authorization) =>
-          post {
-            log.info("Authorization: {}", authorization)
-            log.info("Target: {}", targetHeader.target)
-            targetHeader.target match {
-              case CreateSecret => complete("")
-              case PutSecretValue => complete("")
-              case _ => throw new IllegalArgumentException("Not implemented")
-            }
-          }
-      }
+      concat(CreateSecretRoute().route)
     }
 }
