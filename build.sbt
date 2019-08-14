@@ -18,15 +18,15 @@ lazy val root = (project in file("."))
     Defaults.itSettings,
     name := "secrets-manager-mock",
     resolvers += Resolver.jcenterRepo,
-    fork in Test := true,
+    fork in Test := false,
     parallelExecution in IntegrationTest := false,
     libraryDependencies ++= {
 
-      val akkaVersion = "2.5.23"
+      val akkaVersion = "2.5.24"
       val akkaHttpVersion = "10.1.9"
       val circeVersion = "0.11.1"
       val akkaHttpCirceVersion = "1.27.0"
-      val scalaXmlVersion = "1.1.1"
+      // val scalaXmlVersion = "1.1.1"
       val EnumeratumVersion = "1.5.13"
       val EnumeratumCirceVersion = "1.5.20"
       val NitriteVersion = "3.2.0"
@@ -39,7 +39,7 @@ lazy val root = (project in file("."))
       val circe = "io.circe"
       val heikoseeberger = "de.heikoseeberger"
       val logback = "ch.qos.logback"
-      val scalaLangModules = "org.scala-lang.modules"
+      // val scalaLangModules = "org.scala-lang.modules"
       val Beachape = "com.beachape"
       val Enumeratum = "enumeratum"
       val EnumeratumCirce = "enumeratum-circe"

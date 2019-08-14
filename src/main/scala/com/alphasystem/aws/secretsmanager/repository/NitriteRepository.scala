@@ -12,6 +12,7 @@ import org.dizitart.no2.filters.Filters.{eq => feq, _}
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
+import scala.util.{Failure, Success, Try}
 
 class NitriteRepository(dbFile: String) extends Repository {
 
@@ -45,11 +46,26 @@ class NitriteRepository(dbFile: String) extends Repository {
                    secretString: Option[String] = None,
                    secretBinary: Option[String] = None,
                    tag: Option[Tag] = None): SecretResponse = {
-    val cursor = secretCollection.find(feq(NameProperty, name))
-    if (cursor.size() > 0) {
-      throw ResourceExistsException
-    }
+    val maybeSecretEntity =
+      Try(describeSecret(name)) match {
+        case Failure(ex: ResourceNotFoundException.type) => None
+        case Failure(ex: IllegalStateException) => throw ex
+        case Success(secretEntity) => Some(secretEntity)
+      }
 
+    maybeSecretEntity match {
+      case Some(_) => putSecretValue(name, versionId, secretString, secretBinary)
+      case None => createNewSecret(name, versionId, description, kmsKeyId, secretString, secretBinary, tag)
+    }
+  }
+
+  private def createNewSecret(name: String,
+                              versionId: String,
+                              description: Option[String],
+                              kmsKeyId: Option[String],
+                              secretString: Option[String],
+                              secretBinary: Option[String],
+                              tag: Option[Tag]) = {
     val (secret, property) = parseSecret(secretString, secretBinary)
     val arn = s"$name-$getRandomString"
     val creationDate = OffsetDateTime.now().toEpochSecond

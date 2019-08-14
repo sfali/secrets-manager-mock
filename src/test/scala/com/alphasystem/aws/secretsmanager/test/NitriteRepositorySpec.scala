@@ -38,9 +38,9 @@ class NitriteRepositorySpec
   }
 
   it should "reject attempt to create duplicate secret" in {
-    val versionId = UUID.randomUUID().toString
+    val secretString = secretData.copy(password = "Example567").toJson
     an[ResourceExistsException.type] must be thrownBy
-      repository.createSecret(name = defaultName, versionId = versionId, secretString = Some(secretData.toJson))
+      repository.createSecret(name = defaultName, versionId = defaultVersionId, secretString = Some(secretString))
   }
 
   it should "get secret by name without providing stage should return `Current` stage" in {
