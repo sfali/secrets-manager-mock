@@ -1,6 +1,7 @@
 package com.alphasystem.aws.secretsmanager.routes
 
 import akka.http.scaladsl.model.headers.{ModeledCustomHeader, ModeledCustomHeaderCompanion}
+import com.alphasystem.aws.secretsmanager.model.Target
 
 import scala.util.Try
 

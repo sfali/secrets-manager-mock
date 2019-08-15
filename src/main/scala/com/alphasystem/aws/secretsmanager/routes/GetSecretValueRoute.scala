@@ -6,7 +6,7 @@ import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import akka.http.scaladsl.server.Directives._
 import com.alphasystem.aws.secretsmanager.model.Errors.ResourceNotFoundException
-import com.alphasystem.aws.secretsmanager.model.SecretEntity
+import com.alphasystem.aws.secretsmanager.model.{SecretEntity, Target}
 import com.alphasystem.aws.secretsmanager.repository.NitriteRepository
 import com.alphasystem.aws.secretsmanager.routes.model.GetSecretRequest
 

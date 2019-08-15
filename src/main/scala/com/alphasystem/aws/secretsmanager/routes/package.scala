@@ -6,7 +6,7 @@ import akka.http.scaladsl.model.{HttpHeader, HttpRequest}
 import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
 import com.alphasystem.aws.secretsmanager.model.Errors.InvalidRequestException
-import com.alphasystem.aws.secretsmanager.model.{SecretEntity, SecretResponse}
+import com.alphasystem.aws.secretsmanager.model.{SecretEntity, SecretResponse, Target}
 import com.alphasystem.aws.secretsmanager.routes.model.{CreateSecretResponse, GetSecretResponse}
 import io.circe.Decoder
 import io.circe.parser.decode

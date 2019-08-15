@@ -5,13 +5,13 @@ import io.circe.{Decoder, Encoder}
 case class CreateSecretResponse(arn: String, name: String, versionId: String)
 
 object CreateSecretResponse {
-  implicit val CreateSecretRequestDecoder: Decoder[CreateSecretResponse] =
+  implicit val CreateSecretResponseDecoder: Decoder[CreateSecretResponse] =
     Decoder.forProduct3(
       nameA0 = "ARN",
       nameA1 = "Name",
       nameA2 = "VersionId")(CreateSecretResponse.apply)
 
-  implicit val CreateSecretRequestEncoder: Encoder[CreateSecretResponse] =
+  implicit val CreateSecretResponseEncoder: Encoder[CreateSecretResponse] =
     Encoder.forProduct3(
       nameA0 = "ARN",
       nameA1 = "Name",

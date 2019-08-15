@@ -4,7 +4,7 @@ import akka.event.LoggingAdapter
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
-import com.alphasystem.aws.secretsmanager.model.{Errors, SecretResponse}
+import com.alphasystem.aws.secretsmanager.model.{Errors, SecretResponse, Target}
 import com.alphasystem.aws.secretsmanager.repository.NitriteRepository
 import com.alphasystem.aws.secretsmanager.routes.model.CreateSecretRequest
 

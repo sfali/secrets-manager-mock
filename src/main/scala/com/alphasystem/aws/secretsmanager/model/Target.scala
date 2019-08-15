@@ -1,4 +1,4 @@
-package com.alphasystem.aws.secretsmanager.routes
+package com.alphasystem.aws.secretsmanager.model
 
 import enumeratum.{CirceEnum, Enum, EnumEntry}
 
