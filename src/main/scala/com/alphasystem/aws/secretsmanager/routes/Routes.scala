@@ -14,6 +14,6 @@ trait Routes {
 
   protected lazy val _routes: Route =
     pathEndOrSingleSlash {
-      concat(CreateSecretRoute().route)
+      concat(CreateSecretRoute().route, GetSecretValueRoute().route)
     }
 }

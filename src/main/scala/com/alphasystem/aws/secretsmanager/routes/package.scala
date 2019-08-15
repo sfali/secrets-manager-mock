@@ -6,8 +6,8 @@ import akka.http.scaladsl.model.{HttpHeader, HttpRequest}
 import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
 import com.alphasystem.aws.secretsmanager.model.Errors.InvalidRequestException
-import com.alphasystem.aws.secretsmanager.model.SecretResponse
-import com.alphasystem.aws.secretsmanager.routes.model.CreateSecretResponse
+import com.alphasystem.aws.secretsmanager.model.{SecretEntity, SecretResponse}
+import com.alphasystem.aws.secretsmanager.routes.model.{CreateSecretResponse, GetSecretResponse}
 import io.circe.Decoder
 import io.circe.parser.decode
 
@@ -20,6 +20,21 @@ package object routes {
   implicit class SecretResponseOps(src: SecretResponse) {
     def toCreateSecretResponse: CreateSecretResponse =
       CreateSecretResponse(s"$ARNPrefix${src.arn}", src.name, src.versionId)
+  }
+
+  implicit class SecretEntityOps(src: SecretEntity) {
+    def toGetSecretResponse: GetSecretResponse = {
+      val version = src.versions.headOption
+      GetSecretResponse(
+        arn = s"$ARNPrefix${src.arn}",
+        name = src.name,
+        createdDate = src.createdDate.toEpochSecond,
+        versionId = version.map(_.versionId).orNull,
+        secretString = version.flatMap(_.secretString),
+        secretBinary = version.flatMap(_.secretBinary),
+        versionStages = version.map(_.stages).getOrElse(Nil)
+      )
+    }
   }
 
   def extractTarget(value: Target): HttpHeader => Option[String] = {

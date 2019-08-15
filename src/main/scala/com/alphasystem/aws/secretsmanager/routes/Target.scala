@@ -11,6 +11,8 @@ object Target extends Enum[Target] with CirceEnum[Target] {
 
   case object CreateSecret extends Target
 
+  case object GetSecretValue extends Target
+
   case object PutSecretValue extends Target
 
 }

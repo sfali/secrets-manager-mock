@@ -4,7 +4,7 @@ import akka.http.scaladsl.marshalling.Marshaller.fromToEntityMarshaller
 import akka.http.scaladsl.marshalling.{Marshaller, ToEntityMarshaller, ToResponseMarshaller}
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, StatusCodes}
 import com.alphasystem.aws.secretsmanager.model.Errors
-import com.alphasystem.aws.secretsmanager.routes.model.CreateSecretResponse
+import com.alphasystem.aws.secretsmanager.routes.model.{CreateSecretResponse, GetSecretResponse}
 import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport
 
 trait CustomMarshallers extends ErrorAccumulatingCirceSupport {
@@ -22,11 +22,20 @@ trait CustomMarshallers extends ErrorAccumulatingCirceSupport {
   implicit val ResourceExistsExceptionMarshaller: ToEntityMarshaller[ResourceExistsException] =
     errorResponseMarshaller[ResourceExistsException]
 
+  implicit val ResourceNotFoundExceptionMarshaller: ToEntityMarshaller[ResourceNotFoundException] =
+    errorResponseMarshaller[ResourceNotFoundException]
+
   implicit val CreateSecretResponse: ToResponseMarshaller[CreateSecretResponse] =
     fromToEntityMarshaller[CreateSecretResponse](OK)
 
+  implicit val GetSecretResponse: ToResponseMarshaller[GetSecretResponse] =
+    fromToEntityMarshaller[GetSecretResponse](OK)
+
   implicit val ResourceExistsExceptionResponse: ToResponseMarshaller[ResourceExistsException] =
     fromToEntityMarshaller[ResourceExistsException](BadRequest)
+
+  implicit val ResourceNotFoundExceptionResponse: ToResponseMarshaller[ResourceNotFoundException] =
+    fromToEntityMarshaller[ResourceNotFoundException](BadRequest)
 
   implicit val IllegalStateExceptionResponse: ToResponseMarshaller[IllegalStateException] =
     fromToEntityMarshaller[IllegalStateException](InternalServerError)
