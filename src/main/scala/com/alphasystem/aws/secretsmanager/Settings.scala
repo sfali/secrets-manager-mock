@@ -11,6 +11,12 @@ class Settings(config: Config) {
     val port: Int = config.getInt("app.http.port")
   }
 
+  object db extends DBSettings {
+    override val filePath: String = config.getString("app.db.file-path")
+    override val userName: String = config.getString("app.db.user-name")
+    override val password: String = config.getString("app.db.password")
+  }
+
 }
 
 object Settings {

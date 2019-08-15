@@ -15,7 +15,7 @@ object Main extends HttpApp with App with Routes {
   protected override implicit val mat: Materializer = ActorMaterializer()
   private implicit val settings: Settings = Settings()
   override protected implicit val log: LoggingAdapter = system.log
-  override protected implicit val repository: NitriteRepository = NitriteRepository("secrets-manager.db")
+  override protected implicit val repository: NitriteRepository = NitriteRepository()
 
   override protected def routes: Route = _routes
 

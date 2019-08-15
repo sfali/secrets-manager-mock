@@ -14,7 +14,7 @@ import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
 import scala.util.{Failure, Success, Try}
 
-class NitriteRepository(dbFile: String) {
+class NitriteRepository(settings: DBSettings) {
 
   import Document._
   import Errors._
@@ -26,8 +26,8 @@ class NitriteRepository(dbFile: String) {
     Nitrite
       .builder()
       .compressed()
-      .filePath(dbFile)
-      .openOrCreate("root", "Example123")
+      .filePath(settings.filePath)
+      .openOrCreate(settings.userName, settings.filePath)
 
   private val secretCollection: NitriteCollection = db.getCollection("secrets-manager")
   if (!secretCollection.hasIndex(ArnProperty))
@@ -237,5 +237,8 @@ object NitriteRepository {
 
   private val NoSpaceWithDropNullValues: Printer = Printer.noSpaces.copy(dropNullValues = true)
 
-  def apply(dbFile: String): NitriteRepository = new NitriteRepository(dbFile)
+  def apply(settings: DBSettings): NitriteRepository = new NitriteRepository(settings)
+
+  def apply()(implicit settings: Settings): NitriteRepository = NitriteRepository(settings.db)
+
 }

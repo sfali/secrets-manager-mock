@@ -16,10 +16,14 @@ class NitriteRepositorySpec
   import Errors._
 
   private val defaultName = "local/test"
-  private val dbFile: String = "test.db"
+  private val dbFile: String = "target/test.db"
   private val secretData = SecretModel("app_adm", "Example123")
   private val defaultVersionId = toVersionId(defaultName)
-  private val repository = NitriteRepository(dbFile)
+  private val repository = NitriteRepository(new DBSettings {
+    override val filePath: String = dbFile
+    override val userName: String = "root"
+    override val password: String = "Example123"
+  })
 
   override protected def afterAll(): Unit = {
     super.afterAll()

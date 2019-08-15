@@ -69,4 +69,10 @@ package object secretsmanager {
       case head :: _ => head
     }
   }
+
+  trait DBSettings {
+    val filePath: String
+    val userName: String
+    val password: String
+  }
 }
