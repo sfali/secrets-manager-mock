@@ -4,9 +4,9 @@ import akka.event.LoggingAdapter
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
-import com.alphasystem.aws.secretsmanager.model.{Errors, SecretResponse, Target}
+import com.alphasystem.aws.secretsmanager.model.{Errors, Target}
 import com.alphasystem.aws.secretsmanager.repository.NitriteRepository
-import com.alphasystem.aws.secretsmanager.routes.model.CreateSecretRequest
+import com.alphasystem.aws.secretsmanager.routes.model.{CreateSecretRequest, CreateSecretResponse}
 
 import scala.util.{Failure, Success}
 
@@ -15,16 +15,16 @@ class CreateSecretRoute private(log: LoggingAdapter, repository: NitriteReposito
 
   import Errors._
 
-  private def getResponse(entity: CreateSecretRequest): SecretResponse =
-    repository.createSecret(entity.name, entity.versionId,
-      entity.description, entity.kmsKeyId, entity.secretString, entity.secretBinary, entity.tags)
+  private def getResponse(entity: CreateSecretRequest): CreateSecretResponse =
+    repository.createSecret(entity.name, entity.versionId, entity.description, entity.kmsKeyId, entity.secretString,
+      entity.secretBinary, entity.tags).toCreateSecretResponse
 
   def route: Route =
     (post & extractRequest & headerValue(extractTarget(Target.CreateSecret))) {
       (request, _) =>
-        val eventualRequest = extractEntity[CreateSecretRequest, SecretResponse](request, log, getResponse)
+        val eventualRequest = extractEntity[CreateSecretRequest, CreateSecretResponse](request, log, getResponse)
         onComplete(eventualRequest) {
-          case Success(value) => complete(value.toCreateSecretResponse)
+          case Success(value) => complete(value)
           case Failure(ex: ResourceExistsException) =>
             log.error(ex, "CreateSecretRequest-ResourceExistsException: Unable to create secret")
             complete(ex)

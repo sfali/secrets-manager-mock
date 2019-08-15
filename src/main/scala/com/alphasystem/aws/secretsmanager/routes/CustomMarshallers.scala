@@ -4,7 +4,7 @@ import akka.http.scaladsl.marshalling.Marshaller.fromToEntityMarshaller
 import akka.http.scaladsl.marshalling.{Marshaller, ToEntityMarshaller, ToResponseMarshaller}
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, StatusCodes}
 import com.alphasystem.aws.secretsmanager.model.Errors
-import com.alphasystem.aws.secretsmanager.routes.model.{CreateSecretResponse, GetSecretResponse}
+import com.alphasystem.aws.secretsmanager.routes.model.{CreateSecretResponse, GetSecretResponse, PutSecretValueResponse}
 import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport
 
 trait CustomMarshallers extends ErrorAccumulatingCirceSupport {
@@ -25,11 +25,14 @@ trait CustomMarshallers extends ErrorAccumulatingCirceSupport {
   implicit val ResourceNotFoundExceptionMarshaller: ToEntityMarshaller[ResourceNotFoundException] =
     errorResponseMarshaller[ResourceNotFoundException]
 
-  implicit val CreateSecretResponse: ToResponseMarshaller[CreateSecretResponse] =
+  implicit val CreateSecretResponseMarshaller: ToResponseMarshaller[CreateSecretResponse] =
     fromToEntityMarshaller[CreateSecretResponse](OK)
 
-  implicit val GetSecretResponse: ToResponseMarshaller[GetSecretResponse] =
+  implicit val GetSecretResponseMarshaller: ToResponseMarshaller[GetSecretResponse] =
     fromToEntityMarshaller[GetSecretResponse](OK)
+
+  implicit val PutSecretValueResponseMarshaller: ToResponseMarshaller[PutSecretValueResponse] =
+    fromToEntityMarshaller[PutSecretValueResponse](OK)
 
   implicit val ResourceExistsExceptionResponse: ToResponseMarshaller[ResourceExistsException] =
     fromToEntityMarshaller[ResourceExistsException](BadRequest)
