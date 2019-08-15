@@ -26,10 +26,10 @@ lazy val root = (project in file("."))
       val akkaHttpVersion = "10.1.9"
       val circeVersion = "0.11.1"
       val akkaHttpCirceVersion = "1.27.0"
-      // val scalaXmlVersion = "1.1.1"
       val EnumeratumVersion = "1.5.13"
       val EnumeratumCirceVersion = "1.5.20"
       val NitriteVersion = "3.2.0"
+      val AwsSdkVersion = "2.7.23"
 
       val akka = "com.typesafe.akka"
       val scalaTest = "org.scalatest"
@@ -39,11 +39,11 @@ lazy val root = (project in file("."))
       val circe = "io.circe"
       val heikoseeberger = "de.heikoseeberger"
       val logback = "ch.qos.logback"
-      // val scalaLangModules = "org.scala-lang.modules"
       val Beachape = "com.beachape"
       val Enumeratum = "enumeratum"
       val EnumeratumCirce = "enumeratum-circe"
       val Dizitart = "org.dizitart"
+      val AwsSdk = "software.amazon.awssdk"
 
       Seq(
         akka             %% "akka-http"                         % akkaHttpVersion,
@@ -62,7 +62,9 @@ lazy val root = (project in file("."))
         scalaTest        %% "scalatest"                         % "3.0.8"                     % "it, test",
         scalacheck       %% "scalacheck"                        % "1.13.5"                    % "it, test",
         scalaTestMock    %% "scalamock-scalatest-support"       % "3.6.0"                     % "it, test",
-        akka 				     %% "akka-http-testkit" 				        % akkaHttpVersion             % Test
+        akka 				     %% "akka-http-testkit" 				        % akkaHttpVersion             % Test,
+        AwsSdk            % "sts"                               % AwsSdkVersion               % IntegrationTest,
+        AwsSdk            % "secretsmanager"                    % AwsSdkVersion               % IntegrationTest
       )
     }
   )
