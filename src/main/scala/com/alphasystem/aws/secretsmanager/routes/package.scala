@@ -5,6 +5,7 @@ import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.model.{HttpHeader, HttpRequest}
 import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
+import com.alphasystem.aws.secretsmanager.directives.`X-Amz-Target`
 import com.alphasystem.aws.secretsmanager.model.Errors.InvalidRequestException
 import com.alphasystem.aws.secretsmanager.model.{SecretEntity, SecretResponse, Target}
 import com.alphasystem.aws.secretsmanager.routes.model.{CreateSecretResponse, GetSecretResponse}
@@ -14,8 +15,6 @@ import io.circe.parser.decode
 import scala.concurrent.Future
 
 package object routes {
-
-  import Directives._
 
   implicit class SecretResponseOps(src: SecretResponse) {
     def toCreateSecretResponse: CreateSecretResponse =
