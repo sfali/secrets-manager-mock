@@ -6,7 +6,7 @@ case class PutSecretValueRequest(secretId: String,
                                  versionId: String,
                                  secretString: Option[String],
                                  secretBinary: Option[String],
-                                 versionStages: List[String])
+                                 versionStages: Option[List[String]])
 
 object PutSecretValueRequest {
   implicit val PutSecretRequestDecoder: Decoder[PutSecretValueRequest] =

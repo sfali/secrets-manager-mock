@@ -5,7 +5,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import com.alphasystem.aws.secretsmanager.model.Errors.ResourceExistsException
-import com.alphasystem.aws.secretsmanager.model.{SecretResponse, Target}
+import com.alphasystem.aws.secretsmanager.model.Target
 import com.alphasystem.aws.secretsmanager.repository.NitriteRepository
 import com.alphasystem.aws.secretsmanager.routes.model.{PutSecretValueRequest, PutSecretValueResponse}
 
@@ -17,7 +17,7 @@ class PutSecretValueRoute private(log: LoggingAdapter, repository: NitriteReposi
 
   private def getResponse(request: PutSecretValueRequest): PutSecretValueResponse =
     repository.putSecretValue(request.secretId, request.versionId, request.secretString, request.secretBinary,
-      request.versionStages).toPutSecretValueResponse
+      request.versionStages.getOrElse(Nil)).toPutSecretValueResponse
 
   def route: Route =
     (post & extractRequest & headerValue(extractTarget(Target.PutSecretValue))) {
