@@ -141,7 +141,7 @@ class NitriteRepository(settings: DBSettings) {
         val differentSecretString = secretString.isDefined && !version.secretString.forall(_ == secretString.get)
         val differentSecretBinary = secretBinary.isDefined && !version.secretBinary.forall(_ == secretBinary.get)
         if (differentSecretString || differentSecretBinary) {
-          throw ResourceExistsException(name)
+          throw ResourceExistsException(secretEntity.fullArn, Some(versionId))
         } else {
           // existing version with no changes
           SecretResponse(secretEntity.arn, secretEntity.name, version.versionId, version.stages)

@@ -8,8 +8,12 @@ object Errors {
   case object InvalidRequestException
     extends Exception("You provided a parameter value that is not valid for the current state of the resource.")
 
-  case class ResourceExistsException(secretId: String) extends ErrorResponse {
-    override val message: String = s"The operation failed because the secret $secretId already exists."
+  case class ResourceExistsException(secretId: String, versionId: Option[String]) extends ErrorResponse {
+    override val message: String = versionId match {
+      case Some(value) => s"""You can't use ClientRequestToken $value because that value is already in use for a
+                             | version of secret $secretId.""".stripMargin.replaceAll(System.lineSeparator(), "")
+      case None => s"The operation failed because the secret $secretId already exists."
+    }
   }
 
   case class ResourceNotFoundException() extends ErrorResponse {

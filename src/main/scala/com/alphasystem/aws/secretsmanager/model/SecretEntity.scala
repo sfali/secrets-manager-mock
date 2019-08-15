@@ -1,6 +1,6 @@
 package com.alphasystem.aws.secretsmanager.model
 
-import com.alphasystem.aws.secretsmanager.DefaultKmsKeyId
+import com.alphasystem.aws.secretsmanager.{DefaultKmsKeyId, ARNPrefix}
 import java.time.OffsetDateTime
 
 case class SecretEntity(name: String,
@@ -17,6 +17,8 @@ case class SecretEntity(name: String,
                         rotationRules: Option[RotationRules] = None,
                         versions: List[Version] = Nil,
                         tags: Option[Tag] = None) {
+  def fullArn = s"$ARNPrefix$arn"
+
   def versionIdsToStages: Map[String, List[String]] =
     versions
       .groupBy(_.versionId)
