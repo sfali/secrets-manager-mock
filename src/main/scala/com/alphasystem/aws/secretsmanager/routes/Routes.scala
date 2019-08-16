@@ -17,7 +17,8 @@ trait Routes {
       concat(
         CreateSecretRoute().route,
         GetSecretValueRoute().route,
-        PutSecretValueRoute().route
+        PutSecretValueRoute().route,
+        DescribeSecretRoute().route
       )
     }
 }

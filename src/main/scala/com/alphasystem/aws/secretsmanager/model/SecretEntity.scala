@@ -19,10 +19,15 @@ case class SecretEntity(name: String,
                         tags: Option[Tag] = None) {
   def fullArn = s"$ARNPrefix$arn"
 
-  def versionIdsToStages: Map[String, List[String]] =
+  def versionIdsToStages(includeDeprecated: Boolean = false): Map[String, List[String]] =
     versions
       .groupBy(_.versionId)
       .map {
-        case (versionId, _versions) => (versionId, _versions.flatMap(_.stages))
+        case (versionId, _versions) =>
+          val allStages = _versions.flatMap(_.stages)
+          val stages =
+            if (includeDeprecated) allStages
+            else allStages.filterNot(_.isEmpty)
+          (versionId, stages)
       }
 }

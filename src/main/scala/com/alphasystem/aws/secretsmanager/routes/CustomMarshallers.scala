@@ -7,7 +7,7 @@ import akka.http.scaladsl.model.{ContentTypes, HttpEntity, StatusCodes}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import com.alphasystem.aws.secretsmanager.model.Errors
-import com.alphasystem.aws.secretsmanager.routes.model.{CreateSecretResponse, GetSecretResponse, PutSecretValueResponse}
+import com.alphasystem.aws.secretsmanager.routes.model.{CreateSecretResponse, DescribeSecretResponse, GetSecretResponse, PutSecretValueResponse}
 import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport
 
 import scala.concurrent.Future
@@ -39,6 +39,9 @@ trait CustomMarshallers extends ErrorAccumulatingCirceSupport {
 
   implicit val PutSecretValueResponseMarshaller: ToResponseMarshaller[PutSecretValueResponse] =
     fromToEntityMarshaller[PutSecretValueResponse](OK)
+
+  implicit val DescribeSecretResponseMarshaller: ToResponseMarshaller[DescribeSecretResponse] =
+    fromToEntityMarshaller[DescribeSecretResponse](OK)
 
   implicit val ResourceExistsExceptionResponse: ToResponseMarshaller[ResourceExistsException] =
     fromToEntityMarshaller[ResourceExistsException](BadRequest)

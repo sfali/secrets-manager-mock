@@ -8,7 +8,7 @@ import akka.stream.scaladsl.Sink
 import com.alphasystem.aws.secretsmanager.directives.`X-Amz-Target`
 import com.alphasystem.aws.secretsmanager.model.Errors.InvalidRequestException
 import com.alphasystem.aws.secretsmanager.model.{SecretEntity, SecretResponse, Target}
-import com.alphasystem.aws.secretsmanager.routes.model.{CreateSecretResponse, GetSecretResponse, PutSecretValueResponse}
+import com.alphasystem.aws.secretsmanager.routes.model.{CreateSecretResponse, DescribeSecretResponse, GetSecretResponse, PutSecretValueResponse}
 import io.circe.Decoder
 import io.circe.parser.decode
 
@@ -28,13 +28,31 @@ package object routes {
     def toGetSecretResponse: GetSecretResponse = {
       val version = src.versions.headOption
       GetSecretResponse(
-        arn = s"$ARNPrefix${src.arn}",
+        arn = src.fullArn,
         name = src.name,
         createdDate = src.createdDate.toEpochSecond,
         versionId = version.map(_.versionId).orNull,
         secretString = version.flatMap(_.secretString),
         secretBinary = version.flatMap(_.secretBinary),
         versionStages = version.map(_.stages).getOrElse(Nil)
+      )
+    }
+
+    def toDescribeSecretResponse: DescribeSecretResponse = {
+      DescribeSecretResponse(
+        arn = src.fullArn,
+        name = src.name,
+        description = src.description,
+        kmsKeyId = src.kmsKeyId,
+        deletedDate = src.deletedDate.map(_.toEpochSecond),
+        lastAccessedDate = src.lastAccessedDate.map(_.toEpochSecond),
+        lastChangedDate = Some(src.lastChangedDate.toEpochSecond),
+        lastRotatedDate = src.lastAccessedDate.map(_.toEpochSecond),
+        rotationEnabled = src.rotationEnabled,
+        rotationLambdaArn = src.rotationLambdaArn,
+        rotationRules = src.rotationRules,
+        tags = src.tags.map(_.tags),
+        versionIdsToStages = src.versionIdsToStages()
       )
     }
   }
