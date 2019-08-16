@@ -4,7 +4,7 @@ import com.alphasystem.aws.secretsmanager.model.Tag
 import io.circe.{Decoder, Encoder}
 
 case class CreateSecretRequest(name: String,
-                               versionId: String,
+                               versionId: Option[String],
                                description: Option[String],
                                kmsKeyId: Option[String],
                                secretString: Option[String],

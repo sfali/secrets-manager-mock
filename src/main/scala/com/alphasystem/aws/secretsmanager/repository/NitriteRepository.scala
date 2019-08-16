@@ -1,7 +1,6 @@
 package com.alphasystem.aws.secretsmanager.repository
 
 import java.time.OffsetDateTime
-import java.util.UUID
 
 import com.alphasystem.aws.secretsmanager._
 import com.alphasystem.aws.secretsmanager.model.{Errors, _}
@@ -40,7 +39,7 @@ class NitriteRepository(settings: DBSettings) {
   private val versionCollectionOps = VersionCollectionOps(versionCollection)
 
   def createSecret(name: String,
-                   versionId: String = UUID.randomUUID().toString,
+                   versionId: Option[String] = None,
                    description: Option[String] = None,
                    kmsKeyId: Option[String] = None,
                    secretString: Option[String] = None,
@@ -54,13 +53,16 @@ class NitriteRepository(settings: DBSettings) {
       }
 
     maybeSecretEntity match {
-      case Some(_) => putSecretValue(name, versionId, secretString, secretBinary)
+      case Some(secretEntity) =>
+        versionId
+          .map(vId => putSecretValue(name, vId, secretString, secretBinary))
+          .getOrElse(throw ResourceExistsException(secretEntity.fullArn)) // TODO: find out AWS behavior
       case None => createNewSecret(name, versionId, description, kmsKeyId, secretString, secretBinary, tag)
     }
   }
 
   def updateSecret(secretId: String,
-                   versionId: String = UUID.randomUUID().toString,
+                   versionId: Option[String] = None,
                    description: Option[String] = None,
                    kmsKeyId: Option[String] = None,
                    secretString: Option[String] = None,
@@ -72,13 +74,16 @@ class NitriteRepository(settings: DBSettings) {
     else if (docs.length > 1) throw new IllegalStateException(s"Found more than one record for $secretId.")
     var doc = docs.head.put(DescriptionProperty, description.orNull)
     doc = kmsKeyId.map(keyId => doc.put(KmsKeyIdProperty, keyId)).getOrElse(doc)
-    val response = putSecretValue(secretId, versionId, secretString, secretBinary, versionStages)
+    val response =
+      versionId
+        .map(vId => putSecretValue(secretId, vId, secretString, secretBinary, versionStages))
+        .getOrElse(SecretResponse(secretId, name))
     secretCollection.update(doc)
     response
   }
 
   private def createNewSecret(name: String,
-                              versionId: String,
+                              versionId: Option[String],
                               description: Option[String],
                               kmsKeyId: Option[String],
                               secretString: Option[String],
@@ -96,18 +101,22 @@ class NitriteRepository(settings: DBSettings) {
       .put(LastChangedDateProperty, creationDate.toString)
       .put(TagsProperty, tag.asJson.pretty(NoSpaceWithDropNullValues))
 
-    val versionDoc = versionCollectionOps
-      .createVersion(
-        name = name,
-        versionId = versionId,
-        secret = secret,
-        secretProperty = property,
-        creationDate = creationDate,
-        versionStages = CurrentLabel :: Nil)
+    val maybeVersionDoc =
+      versionId
+        .map(vId => versionCollectionOps
+          .createVersion(
+            name = name,
+            versionId = vId,
+            secret = secret,
+            secretProperty = property,
+            creationDate = creationDate,
+            versionStages = CurrentLabel :: Nil))
 
     secretCollection.insert(doc)
-    versionCollection.insert(versionDoc)
-    SecretResponse(arn, name, versionId, CurrentLabel :: Nil)
+    maybeVersionDoc.foreach(versionCollection.insert(_))
+    versionId.
+      map(vId => SecretResponse(arn, name, Some(vId), CurrentLabel :: Nil))
+      .getOrElse(SecretResponse(arn, name))
   }
 
   def getSecret(secretId: String,
@@ -145,7 +154,7 @@ class NitriteRepository(settings: DBSettings) {
   }
 
   def putSecretValue(secretId: String,
-                     versionId: String = UUID.randomUUID().toString,
+                     versionId: String,
                      secretString: Option[String] = None,
                      secretBinary: Option[String] = None,
                      versionStages: List[String] = Nil): SecretResponse = {
@@ -163,7 +172,7 @@ class NitriteRepository(settings: DBSettings) {
           throw ResourceExistsException(secretEntity.fullArn, Some(versionId))
         } else {
           // existing version with no changes
-          SecretResponse(secretEntity.arn, secretEntity.name, version.versionId, version.stages)
+          SecretResponse(secretEntity.arn, secretEntity.name, Some(version.versionId), version.stages)
         }
       case None =>
         // new version needs to be created
@@ -238,7 +247,7 @@ class NitriteRepository(settings: DBSettings) {
     documents.map(versionCollection.update)
     versionCollection.insert(document)
     db.commit()
-    SecretResponse(arn, name, versionId, finalStages)
+    SecretResponse(arn, name, Some(versionId), finalStages)
   }
 
   private def getSecretDocument(name: String) = secretCollection.find(feq(NameProperty, name)).toScalaList

@@ -36,15 +36,15 @@ class NitriteRepositorySpec
     val versionId = defaultVersionId
     val response = repository.createSecret(name = defaultName,
       description = Some(description),
-      versionId = versionId,
+      versionId = Some(versionId),
       secretString = Some(secretData.toJson))
-    response mustBe SecretResponse(response.arn, defaultName, versionId, CurrentLabel :: Nil)
+    response mustBe SecretResponse(response.arn, defaultName, Some(versionId), CurrentLabel :: Nil)
   }
 
   it should "reject attempt to create duplicate secret" in {
     val secretString = secretData.copy(password = "Example567").toJson
     an[ResourceExistsException] must be thrownBy
-      repository.createSecret(name = defaultName, versionId = defaultVersionId, secretString = Some(secretString))
+      repository.createSecret(name = defaultName, versionId = Some(defaultVersionId), secretString = Some(secretString))
   }
 
   it should "get secret by name without providing stage should return `Current` stage" in {

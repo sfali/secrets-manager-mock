@@ -2,7 +2,7 @@ package com.alphasystem.aws.secretsmanager.routes.model
 
 import io.circe.{Decoder, Encoder}
 
-case class CreateSecretResponse(arn: String, name: String, versionId: String)
+case class CreateSecretResponse(arn: String, name: String, versionId: Option[String])
 
 object CreateSecretResponse {
   implicit val CreateSecretResponseDecoder: Decoder[CreateSecretResponse] =

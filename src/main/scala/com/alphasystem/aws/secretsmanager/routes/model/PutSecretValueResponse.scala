@@ -4,7 +4,7 @@ import io.circe.{Decoder, Encoder}
 
 case class PutSecretValueResponse(arn: String,
                                   name: String,
-                                  versionId: String,
+                                  versionId: Option[String],
                                   versionStages: List[String])
 
 object PutSecretValueResponse {
