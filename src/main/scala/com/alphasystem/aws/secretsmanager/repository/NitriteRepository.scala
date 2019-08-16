@@ -59,6 +59,24 @@ class NitriteRepository(settings: DBSettings) {
     }
   }
 
+  def updateSecret(secretId: String,
+                   versionId: String = UUID.randomUUID().toString,
+                   description: Option[String] = None,
+                   kmsKeyId: Option[String] = None,
+                   secretString: Option[String] = None,
+                   secretBinary: Option[String] = None,
+                   versionStages: List[String] = Nil): SecretResponse = {
+    val name = getNameFromSecretId(secretId)
+    val docs = getSecretDocument(name)
+    if (docs.isEmpty) throw ResourceNotFoundException()
+    else if (docs.length > 1) throw new IllegalStateException(s"Found more than one record for $secretId.")
+    var doc = docs.head.put(DescriptionProperty, description.orNull)
+    doc = kmsKeyId.map(keyId => doc.put(KmsKeyIdProperty, keyId)).getOrElse(doc)
+    val response = putSecretValue(secretId, versionId, secretString, secretBinary, versionStages)
+    secretCollection.update(doc)
+    response
+  }
+
   private def createNewSecret(name: String,
                               versionId: String,
                               description: Option[String],
@@ -69,6 +87,7 @@ class NitriteRepository(settings: DBSettings) {
     val (secret, property) = parseSecret(secretString, secretBinary)
     val arn = s"$name-$getRandomString"
     val creationDate = OffsetDateTime.now().toEpochSecond
+
     val doc = createDocument(NameProperty, name)
       .put(ArnProperty, arn)
       .put(DescriptionProperty, description.orNull)
@@ -222,8 +241,10 @@ class NitriteRepository(settings: DBSettings) {
     SecretResponse(arn, name, versionId, finalStages)
   }
 
+  private def getSecretDocument(name: String) = secretCollection.find(feq(NameProperty, name)).toScalaList
+
   private def getSecretInternal(name: String) = {
-    secretCollection.find(feq(NameProperty, name)).toScalaList match {
+    getSecretDocument(name) match {
       case Nil => throw ResourceNotFoundException()
       case document :: Nil => toSecretEntity(document, populateVersion = false)
       case _ => throw new IllegalStateException(s"Found more than one record for $name.")

@@ -8,7 +8,7 @@ import akka.stream.scaladsl.Sink
 import com.alphasystem.aws.secretsmanager.directives.`X-Amz-Target`
 import com.alphasystem.aws.secretsmanager.model.Errors.InvalidRequestException
 import com.alphasystem.aws.secretsmanager.model.{SecretEntity, SecretResponse, Target}
-import com.alphasystem.aws.secretsmanager.routes.model.{CreateSecretResponse, DescribeSecretResponse, GetSecretResponse, PutSecretValueResponse}
+import com.alphasystem.aws.secretsmanager.routes.model.{CreateSecretResponse, DescribeSecretResponse, GetSecretResponse, PutSecretValueResponse, UpdateSecretResponse}
 import io.circe.Decoder
 import io.circe.parser.decode
 
@@ -22,6 +22,9 @@ package object routes {
 
     def toPutSecretValueResponse: PutSecretValueResponse =
       PutSecretValueResponse(s"$ARNPrefix${src.arn}", src.name, src.versionId, src.versionStages)
+
+    def toUpdateSecretResponse: UpdateSecretResponse =
+      UpdateSecretResponse(s"$ARNPrefix${src.arn}", src.name, src.versionId, src.versionStages)
   }
 
   implicit class SecretEntityOps(src: SecretEntity) {
