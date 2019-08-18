@@ -141,6 +141,4 @@ class NitriteRepositorySpec
     val oldPreviousVersion = versions.filter(_.versionId == toVersionId(PreviousLabel)).head
     oldPreviousVersion.stages mustBe empty
   }
-
-  private lazy val toVersionId = (name: String) => UUID.nameUUIDFromBytes(name.getBytes).toString
 }
