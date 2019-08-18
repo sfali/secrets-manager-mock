@@ -1,12 +1,15 @@
 package com.alphasystem.aws.secretsmanager
 
+import java.net.URI
+
 import software.amazon.awssdk.auth.credentials._
+import software.amazon.awssdk.regions.Region
 
 package object it {
 
   implicit class SettingsOps(src: Settings) {
     val awsSettings: AWSSettings = new AWSSettings {
-      override val region: String = src.config.getString("app.aws.region")
+      override val region: Region = Region.of(src.config.getString("app.aws.region"))
       override val credentialsProvider: AwsCredentialsProvider =
         src.config.getString("app.aws.credentials.provider") match {
           case "default" => DefaultCredentialsProvider.create()
@@ -24,10 +27,13 @@ package object it {
           case _ => DefaultCredentialsProvider.create()
         }
     }
+    object secretsManager {
+      val endPoint: URI = new URI(src.config.getString("app.secrets-manager.end-point"))
+    }
   }
 
   trait AWSSettings {
-    val region: String
+    val region: Region
     val credentialsProvider: AwsCredentialsProvider
   }
 
